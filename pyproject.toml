@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ideb-mcp"
+version = "0.1.0"
+description = "Servidor MCP para consultar dados IDEB do Brasil"
+requires-python = ">=3.10"
+dependencies = ["mcp>=1.2.0"]
