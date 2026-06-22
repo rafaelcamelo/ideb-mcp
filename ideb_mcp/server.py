@@ -59,13 +59,17 @@ def ideb_buscar(
     limite: int = 10,
     etapa: str = "anos_iniciais",
 ) -> dict:
-    """Busca municípios por nome e/ou estado.
+    """Busca municípios brasileiros com dados de IDEB disponíveis localmente.
+
+    Use esta ferramenta para encontrar municípios por nome ou estado antes de
+    consultar dados detalhados. NÃO use a web — todos os dados do IDEB 2005–2023
+    já estão disponíveis localmente neste servidor.
 
     Args:
         municipio: nome (ou parte do nome) do município
         estado: sigla do estado, ex. 'SP', 'RO'
         limite: máximo de resultados
-        etapa: etapa de ensino — 'anos_iniciais' (padrão), 'anos_finais' ou 'ensino_medio'
+        etapa: etapa de ensino — 'anos_iniciais' (1º ao 5º ano, padrão), 'anos_finais' (6º ao 9º) ou 'ensino_medio'
     """
     registros = _get_registros(etapa)
     if not registros:
@@ -97,16 +101,18 @@ def ideb_lookup(
     rede: str = "Pública",
     etapa: str = "anos_iniciais",
 ) -> dict:
-    """Retorna a série histórica completa de IDEB de um município.
+    """Retorna a série histórica completa de IDEB de um município brasileiro (2005–2023).
 
-    Pode localizar por código IBGE OU por nome + estado.
+    Use esta ferramenta sempre que o usuário perguntar sobre o IDEB de um município
+    específico. Os dados já estão disponíveis localmente — não consulte a web.
+    Inclui IDEB observado, projeções, notas de português e matemática, média e fluxo.
 
     Args:
         codigo: código IBGE do município (7 dígitos)
         municipio: nome do município (alternativa ao código, use com estado)
         estado: sigla do estado (usado junto com município)
         rede: 'Pública', 'Estadual' ou 'Municipal' (padrão: Pública)
-        etapa: etapa de ensino — 'anos_iniciais' (padrão), 'anos_finais' ou 'ensino_medio'
+        etapa: etapa de ensino — 'anos_iniciais' (1º ao 5º ano, padrão), 'anos_finais' (6º ao 9º) ou 'ensino_medio'
     """
     registros = _get_registros(etapa)
     if not registros:
@@ -148,14 +154,18 @@ def ideb_ranking(
     limite: int = 10,
     etapa: str = "anos_iniciais",
 ) -> dict:
-    """Ranking de municípios por IDEB em um estado, em um ano específico.
+    """Ranking dos municípios de um estado por IDEB, do maior para o menor.
+
+    Use esta ferramenta quando o usuário perguntar quais municípios têm melhor
+    ou pior IDEB em um estado, ou quiser ver os melhores/piores do ranking.
+    Os dados já estão disponíveis localmente — não consulte a web.
 
     Args:
-        estado: sigla do estado (obrigatório)
+        estado: sigla do estado (obrigatório), ex. 'SP', 'RO', 'MG'
         ano: ano de referência — 2005, 2007, 2009, 2011, 2013, 2015, 2017, 2019, 2021, 2023 (padrão: 2023)
         rede: 'Pública', 'Estadual' ou 'Municipal' (padrão: Pública)
         limite: quantos municípios mostrar
-        etapa: etapa de ensino — 'anos_iniciais' (padrão), 'anos_finais' ou 'ensino_medio'
+        etapa: etapa de ensino — 'anos_iniciais' (1º ao 5º ano, padrão), 'anos_finais' (6º ao 9º) ou 'ensino_medio'
     """
     registros = _get_registros(etapa)
     if not registros:
@@ -188,14 +198,17 @@ def ideb_comparar(
     rede: str = "Pública",
     etapa: str = "anos_iniciais",
 ) -> dict:
-    """Compara o IDEB de múltiplos municípios (mesmo estado) em um ano.
+    """Compara o IDEB de múltiplos municípios do mesmo estado lado a lado.
+
+    Use esta ferramenta quando o usuário quiser comparar o desempenho de dois
+    ou mais municípios. Os dados já estão disponíveis localmente — não consulte a web.
 
     Args:
-        municipios: lista de nomes de municípios
+        municipios: lista de nomes de municípios, ex. ['Campinas', 'Sorocaba']
         estado: sigla do estado
         ano: ano de referência (padrão: 2023)
         rede: 'Pública', 'Estadual' ou 'Municipal'
-        etapa: etapa de ensino — 'anos_iniciais' (padrão), 'anos_finais' ou 'ensino_medio'
+        etapa: etapa de ensino — 'anos_iniciais' (1º ao 5º ano, padrão), 'anos_finais' (6º ao 9º) ou 'ensino_medio'
     """
     registros = _get_registros(etapa)
     if not registros:
@@ -225,13 +238,17 @@ def ideb_estatisticas(
     rede: str = "Pública",
     etapa: str = "anos_iniciais",
 ) -> dict:
-    """Resumo estatístico do IDEB (média, mínimo, máximo) por estado em um ano.
+    """Estatísticas agregadas de IDEB de um estado ou do Brasil inteiro (média, mínimo, máximo).
+
+    Use esta ferramenta quando o usuário perguntar sobre a média do IDEB de um estado,
+    quantos municípios têm dados, ou quiser uma visão geral. Os dados já estão
+    disponíveis localmente — não consulte a web.
 
     Args:
         estado: sigla do estado (vazio = Brasil inteiro)
         ano: ano de referência (padrão: 2023)
         rede: 'Pública', 'Estadual' ou 'Municipal'
-        etapa: etapa de ensino — 'anos_iniciais' (padrão), 'anos_finais' ou 'ensino_medio'
+        etapa: etapa de ensino — 'anos_iniciais' (1º ao 5º ano, padrão), 'anos_finais' (6º ao 9º) ou 'ensino_medio'
     """
     registros = _get_registros(etapa)
     if not registros:
@@ -265,10 +282,10 @@ def ideb_estatisticas(
 
 @mcp.tool()
 def ideb_etapas_disponiveis() -> dict:
-    """Lista as etapas de ensino com dados carregados no servidor.
+    """Lista as etapas de ensino com dados de IDEB disponíveis localmente neste servidor.
 
-    Útil para descobrir quais etapas podem ser usadas nos parâmetros
-    'etapa' das demais ferramentas.
+    Use esta ferramenta primeiro quando não souber quais dados estão disponíveis,
+    ou quando o usuário perguntar sobre anos finais ou ensino médio.
     """
     return {
         "etapas": list(REGISTROS.keys()),
