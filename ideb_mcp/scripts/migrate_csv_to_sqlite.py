@@ -111,7 +111,7 @@ def _migrate_municipios(dm, csv_path: str, etapa: str, cfg: dict) -> None:
     rede_ids: dict[str, int] = {}
     municipio_ids: dict[str, int] = {}
 
-    with open(csv_path, encoding="utf-8") as f:
+    with open(csv_path, encoding="latin-1") as f:
         reader = csv.DictReader(f, delimiter=";")
         for i, row in enumerate(reader):
             codigo = row.get("CO_MUNICIPIO", "").strip()
@@ -161,7 +161,7 @@ def _migrate_escolas(dm, csv_path: str, etapa: str, cfg: dict) -> None:
     escola_ids: dict[str, int] = {}
     municipio_ids: dict[str, int] = {}
 
-    with open(csv_path, encoding="utf-8") as f:
+    with open(csv_path, encoding="latin-1") as f:
         reader = csv.DictReader(f, delimiter=";")
         for i, row in enumerate(reader):
             cod_escola = row.get(cfg["col_codigo_escola"], "").strip()
