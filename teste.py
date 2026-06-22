@@ -2,7 +2,8 @@ from ideb_mcp.server import REGISTROS, ideb_lookup, ideb_buscar, ideb_ranking, i
 
 print("=== TESTE DO SERVIDOR IDEB MCP ===\n")
 
-print("📊 Total de municípios carregados:", len(REGISTROS))
+print("📊 Etapas carregadas:", list(REGISTROS.keys()))
+print("📊 Municípios em anos_iniciais:", len(REGISTROS.get("anos_iniciais", {})))
 print()
 
 print("🔍 Teste 1: Buscar municípios em RO")
