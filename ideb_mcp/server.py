@@ -6,14 +6,16 @@ Fonte: INEP/MEC.
 """
 from __future__ import annotations
 
-import csv
 import os
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from ideb_mcp.database import DataManager
+
+DATA_DIR      = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 MUNICIPIOS_CSV = os.path.join(DATA_DIR, "ideb_anos_iniciais_municipios.csv")
+DB_PATH       = os.path.join(DATA_DIR, "ideb_dados.db")
 
 mcp = FastMCP("ideb")
 
@@ -22,90 +24,18 @@ mcp = FastMCP("ideb")
 # (ex.: VL_OBSERVADO_2023, VL_OBSERVADO_2021...). Essas funções geram o nome
 # da coluna certa para cada ano, em vez de escrever cada nome na mão.
 # ----------------------------------------------------------------------------
-ANOS = ["2005", "2007", "2009", "2011", "2013", "2015", "2017", "2019", "2021", "2023"]
-ANOS_PROJECAO = ["2007", "2009", "2011", "2013", "2015", "2017", "2019", "2021"]
 
-def _col_ideb(ano: str) -> str:
-    return f"VL_OBSERVADO_{ano}"
-
-def _col_projecao(ano: str) -> str:
-    return f"VL_PROJECAO_{ano}"
-
-def _col_matematica(ano: str) -> str:
-    return f"VL_NOTA_MATEMATICA_{ano}"
-
-def _col_portugues(ano: str) -> str:
-    return f"VL_NOTA_PORTUGUES_{ano}"
-
-def _col_media(ano: str) -> str:
-    return f"VL_NOTA_MEDIA_{ano}"
-
-def _col_fluxo(ano: str) -> str:
-    return f"VL_INDICADOR_REND_{ano}"
+def _init_db() -> DataManager:
+    """Garante que o banco SQLite existe e está populado; migra do CSV se necessário."""
+    dm = DataManager(DB_PATH)
+    if not dm.is_populated():
+        from ideb_mcp.scripts.migrate_csv_to_sqlite import migrate
+        migrate(MUNICIPIOS_CSV, DB_PATH)
+    return dm
 
 
-def _to_float(val: str) -> float | None:
-    """Converte string com vírgula decimal para float. Vazio -> None."""
-    if not val or not val.strip():
-        return None
-    try:
-        return float(val.strip().replace(",", "."))
-    except ValueError:
-        return None
-
-
-def _load() -> dict[str, dict[str, Any]]:
-    """Carrega o CSV. Cada município pode ter até 3 linhas (uma por rede:
-    Estadual, Municipal, Pública). Agrupamos tudo sob o código do município."""
-    registros: dict[str, dict[str, Any]] = {}
-
-    with open(MUNICIPIOS_CSV, encoding="utf-8") as f:
-        reader = csv.DictReader(f, delimiter=";")
-        for row in reader:
-            codigo = row.get("CO_MUNICIPIO", "").strip()
-            rede = row.get("REDE", "").strip()
-            if not codigo or not rede:
-                continue
-
-            if codigo not in registros:
-                registros[codigo] = {
-                    "codigo": codigo,
-                    "municipio": row.get("NO_MUNICIPIO", "").strip(),
-                    "estado": row.get("SG_UF", "").strip(),
-                    "redes": {},
-                }
-
-            serie = {"ideb": {}, "projecao": {}, "matematica": {},
-                     "portugues": {}, "media": {}, "fluxo": {}}
-
-            for ano in ANOS:
-                v = _to_float(row.get(_col_ideb(ano), ""))
-                if v is not None:
-                    serie["ideb"][ano] = v
-                v = _to_float(row.get(_col_matematica(ano), ""))
-                if v is not None:
-                    serie["matematica"][ano] = v
-                v = _to_float(row.get(_col_portugues(ano), ""))
-                if v is not None:
-                    serie["portugues"][ano] = v
-                v = _to_float(row.get(_col_media(ano), ""))
-                if v is not None:
-                    serie["media"][ano] = v
-                v = _to_float(row.get(_col_fluxo(ano), ""))
-                if v is not None:
-                    serie["fluxo"][ano] = v
-
-            for ano in ANOS_PROJECAO:
-                v = _to_float(row.get(_col_projecao(ano), ""))
-                if v is not None:
-                    serie["projecao"][ano] = v
-
-            registros[codigo]["redes"][rede] = serie
-
-    return registros
-
-
-REGISTROS = _load()
+_dm = _init_db()
+REGISTROS: dict[str, dict[str, Any]] = _dm.load_all()
 
 # ----------------------------------------------------------------------------
 # Tools
